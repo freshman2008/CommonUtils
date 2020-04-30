@@ -11,7 +11,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class GetBuilder extends DefaultBuilder<GetBuilder> {
+public class GetRequest extends BaseRequest<GetRequest> {
 
     public void execute(final RequestListener listener) {
         Call call = OkHttpUtil.getInstance().getClient().newCall(request);

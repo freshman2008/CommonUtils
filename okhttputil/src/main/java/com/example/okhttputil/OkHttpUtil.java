@@ -1,9 +1,8 @@
 package com.example.okhttputil;
 
-import com.example.okhttputil.builder.DefaultBuilder;
-import com.example.okhttputil.builder.DownloadFileBuilder;
-import com.example.okhttputil.builder.GetBuilder;
-import com.example.okhttputil.builder.UploadFileBuilder;
+import com.example.okhttputil.builder.DownloadFileRequest;
+import com.example.okhttputil.builder.GetRequest;
+import com.example.okhttputil.builder.UploadFileRequest;
 
 import okhttp3.OkHttpClient;
 
@@ -30,15 +29,15 @@ public class OkHttpUtil {
     }
 
 
-    public static GetBuilder get() {
-        return new GetBuilder();
+    public static GetRequest get() {
+        return new GetRequest();
     }
 
-    public static DownloadFileBuilder download() {
-        return new DownloadFileBuilder();
+    public static DownloadFileRequest download() {
+        return new DownloadFileRequest();
     }
 
-    public static UploadFileBuilder upload() {
-        return new UploadFileBuilder();
+    public static UploadFileRequest upload() {
+        return new UploadFileRequest();
     }
 }

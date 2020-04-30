@@ -22,23 +22,23 @@ import okio.BufferedSink;
 import okio.Okio;
 import okio.Source;
 
-public class UploadFileBuilder extends DefaultBuilder<UploadFileBuilder> {
+public class UploadFileRequest extends BaseRequest<UploadFileRequest> {
     private List<File> uploadFiles = new ArrayList<>();
     private UploadFileListener listener;
 
-    public UploadFileBuilder file(File file) {
+    public UploadFileRequest file(File file) {
         if (file != null && file.exists()) {
             this.uploadFiles.add(file);
         }
         return this;
     }
 
-    public UploadFileBuilder listener(UploadFileListener listener) {
+    public UploadFileRequest listener(UploadFileListener listener) {
         this.listener = listener;
         return this;
     }
 
-    public UploadFileBuilder build() {
+    public UploadFileRequest build() {
         MultipartBody.Builder multiBuilder = new MultipartBody.Builder();
         for (File file : uploadFiles) {
 //                    multiBuilder.addFormDataPart("file", file.getName(), MultipartBody.create(MediaType.parse("multipart/form-data"), file));

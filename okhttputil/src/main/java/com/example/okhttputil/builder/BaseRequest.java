@@ -1,20 +1,11 @@
 package com.example.okhttputil.builder;
 
-import android.util.Log;
-
-import com.example.okhttputil.OkHttpUtil;
-import com.example.okhttputil.listener.RequestListener;
-
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Request;
-import okhttp3.Response;
 
-public abstract class DefaultBuilder<T extends DefaultBuilder>{
+public abstract class BaseRequest<T extends BaseRequest>{
     public String url;
     public Request request;
     public Map<String, String> headers;

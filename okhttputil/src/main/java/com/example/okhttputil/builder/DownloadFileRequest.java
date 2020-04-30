@@ -12,10 +12,10 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class DownloadFileBuilder extends DefaultBuilder<DownloadFileBuilder>  {
+public class DownloadFileRequest extends BaseRequest<DownloadFileRequest> {
     private File downloadFile;
 
-    public DownloadFileBuilder file(File file) {
+    public DownloadFileRequest file(File file) {
         this.downloadFile = file;
         return this;
     }
