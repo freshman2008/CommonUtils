@@ -1,14 +1,18 @@
-package com.example.okhttputil.builder;
+package com.example.okhttputil;
 
 import android.util.Log;
 
-import com.example.okhttputil.OkHttpUtil;
+import com.example.okhttputil.builder.UploadFileBuilder;
+import com.example.okhttputil.listener.DownloadFileListener;
 import com.example.okhttputil.listener.UploadFileListener;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -22,23 +26,25 @@ import okio.BufferedSink;
 import okio.Okio;
 import okio.Source;
 
-public class UploadFileBuilder extends DefaultBuilder<UploadFileBuilder> {
+public class UploadRequest {
+    private String  url;
+    public Request request;
+    public Map<String, String> headers;
+    public Map<String, String> params; //表单参数
+    public UploadFileListener listener;
     private List<File> uploadFiles = new ArrayList<>();
-    private UploadFileListener listener;
 
-    public UploadFileBuilder file(File file) {
-        if (file != null && file.exists()) {
-            this.uploadFiles.add(file);
-        }
-        return this;
+    private UploadRequest(Builder builder) {
+        this.url = builder.url;
+        this.listener = builder.listener;
+        this.uploadFiles = builder.uploadFiles;
     }
 
-    public UploadFileBuilder listener(UploadFileListener listener) {
-        this.listener = listener;
-        return this;
+    public Builder newBuilder() {
+        return new Builder(this);
     }
 
-    public UploadFileBuilder build() {
+    public void execute() {
         MultipartBody.Builder multiBuilder = new MultipartBody.Builder();
         for (File file : uploadFiles) {
 //                    multiBuilder.addFormDataPart("file", file.getName(), MultipartBody.create(MediaType.parse("multipart/form-data"), file));
@@ -52,7 +58,26 @@ public class UploadFileBuilder extends DefaultBuilder<UploadFileBuilder> {
                 .url(url)
                 .post(multiBody)
                 .build();
-        return this;
+
+        Call call = OkHttpUtil.getInstance().getClient().newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                if (listener != null) {
+                    listener.onFailure(e);
+                }
+                Log.v("TAG", "resp:" + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String resp = response.body().string();
+                Log.v("TAG", "resp:" + resp);
+                if (listener != null) {
+                    listener.onSuccess(resp);
+                }
+            }
+        });
     }
 
     public RequestBody createCustomRequestBody(final MediaType contentType, final File file, final UploadFileListener listener) {
@@ -90,25 +115,40 @@ public class UploadFileBuilder extends DefaultBuilder<UploadFileBuilder> {
         };
     }
 
-    public void execute() {
-        Call call = OkHttpUtil.getInstance().getClient().newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                if (listener != null) {
-                    listener.onFailure(e);
-                }
-                Log.v("TAG", "resp:" + e.getMessage());
-            }
+    public static class Builder {
+        private String url;
+        private List<File> uploadFiles = new ArrayList<>();
+        private UploadFileListener listener;
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String resp = response.body().string();
-                Log.v("TAG", "resp:" + resp);
-                if (listener != null) {
-                    listener.onSuccess(resp);
-                }
+        public Builder() {
+        }
+
+        private Builder(UploadRequest request) {
+            this.url = request.url;
+            this.listener = request.listener;
+        }
+
+        public Builder url(String url) {
+            if (url == null) throw new IllegalArgumentException("url == null");
+            this.url = url;
+            return this;
+        }
+
+        public Builder listener(UploadFileListener listener) {
+            this.listener = listener;
+            return this;
+        }
+
+        public Builder file(File file) {
+            if (file != null && file.exists()) {
+                this.uploadFiles.add(file);
             }
-        });
+            return this;
+        }
+
+        public UploadRequest build() {
+            if (url == null) throw new IllegalStateException("url == null");
+            return new UploadRequest(this);
+        }
     }
 }

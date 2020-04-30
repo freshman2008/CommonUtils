@@ -15,6 +15,8 @@ import com.example.okhttputil.listener.UploadFileListener;
 
 import java.io.File;
 
+import okhttp3.OkHttpClient;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -33,11 +35,12 @@ public class MainActivity extends AppCompatActivity {
 //            e.printStackTrace();
 //        }
 
+        OkHttpClient client = new OkHttpClient();
         OkHttpUtil
+//                .initClient(client)
                 .get()
                 .url(url)
-                .build()
-                .execute(new RequestListener() {
+                .listener(new RequestListener() {
                     @Override
                     public void onFailure(Exception e) {
                         Log.v("TAG", "resp:" + e.getMessage());
@@ -47,7 +50,9 @@ public class MainActivity extends AppCompatActivity {
                     public void onResponse(String response) {
                         Log.v("TAG", "response:" + response);
                     }
-                });
+                })
+                .build()
+                .execute();
     }
 
     public void download(View view) {
@@ -62,8 +67,7 @@ public class MainActivity extends AppCompatActivity {
                 .download()
                 .url(url)
                 .file(file)
-                .build()
-                .execute(new DownloadFileListener() {
+                .listener(new DownloadFileListener() {
                     @Override
                     public void onSuccess(File file) {
                         Log.v("hello", "file downloaded : " + file.getAbsolutePath());
@@ -78,7 +82,9 @@ public class MainActivity extends AppCompatActivity {
                     public void onFailure(Exception e) {
                         Log.v("hello", "file download failed.");
                     }
-                });
+                })
+                .build()
+                .execute();
 
 //        downloadFile();
     }
