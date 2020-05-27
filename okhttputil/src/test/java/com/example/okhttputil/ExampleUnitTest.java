@@ -2,6 +2,15 @@ package com.example.okhttputil;
 
 import org.junit.Test;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static org.junit.Assert.*;
 
 /**
@@ -13,5 +22,40 @@ public class ExampleUnitTest {
     @Test
     public void addition_isCorrect() {
         assertEquals(4, 2 + 2);
+    }
+
+    @Test
+    public void et() {
+        final LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
+        final ThreadPoolExecutor mThreadPool = new ThreadPoolExecutor(2, 4, 60, TimeUnit.SECONDS, queue, new ThreadFactory() {
+            private AtomicInteger id = new AtomicInteger(1);
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r, "download thread #" + id.getAndIncrement());
+                return thread;
+            }
+        });
+
+        for (int i = 0; i < 114; i++) {
+            final int index = i;
+            mThreadPool.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println(mThreadPool.toString());
+//                    System.out.println("index: " + index  + ", thread id: "+Thread.currentThread().getName() + ", queue size:"+queue.size());
+                }
+            });
+        }
+
+        try {
+            Thread.sleep(1000*60);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

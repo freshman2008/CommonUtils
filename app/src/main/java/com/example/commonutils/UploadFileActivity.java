@@ -17,6 +17,8 @@ import com.example.okhttputil.OkHttpUtil;
 import com.example.okhttputil.listener.UploadFileListener;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UploadFileActivity extends AppCompatActivity {
     private String filePath1 = null;
@@ -82,10 +84,46 @@ public class UploadFileActivity extends AppCompatActivity {
         File file = new File(filePath1);
         File file1 = new File(filePath2);
         File file2 = new File(filePath3);
+        List<File> fileList = new ArrayList<>();
+        fileList.add(file);
+        fileList.add(file1);
+        fileList.add(file2);
+        for (File f : fileList) {
+            OkHttpUtil
+                    .upload()
+                    .url(url)
+                    .file(f)
+                    .listener(new UploadFileListener() {
+                        @Override
+                        public void onSuccess(String response) {
+                            Log.v("hello", "upload onSuccess: " + response);
+                        }
+
+                        @Override
+                        public void onProgress(long totalBytes, long remainingBytes, boolean done) {
+                            long progress = (totalBytes - remainingBytes) * 100 / totalBytes;
+                            Log.v("hello", "upload progress: " + progress + "%");
+                            if (f.equals(fileList.get(0))) {
+                                progressBar1.setProgress((int)progress);
+                            } else if (f.equals(fileList.get(1))) {
+                                progressBar2.setProgress((int)progress);
+                            } else if (f.equals(fileList.get(2))) {
+                                progressBar3.setProgress((int)progress);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            Log.v("hello", "upload onFailure: " + e.getMessage());
+                        }
+                    })
+                    .build()
+                    .execute();
+        }
 
 //        TestUtil.getInstance().uploadFile(url, file, file1, file2);
 
-        try {
+        /*try {
             OkHttpUtil
                     .upload()
                     .url(url)
@@ -114,6 +152,6 @@ public class UploadFileActivity extends AppCompatActivity {
                     .execute();
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
     }
 }

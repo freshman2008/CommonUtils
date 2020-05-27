@@ -1,8 +1,9 @@
-package com.example.okhttputil.builder;
+package com.example.okhttputil.request;
 
 import android.util.Log;
 
 import com.example.okhttputil.OkHttpUtil;
+import com.example.okhttputil.builder.BaseBuilder;
 import com.example.okhttputil.listener.UploadFileListener;
 
 import java.io.File;
@@ -22,53 +23,67 @@ import okio.BufferedSink;
 import okio.Okio;
 import okio.Source;
 
-public class UploadFileRequest extends BaseRequest<UploadFileRequest> {
-    private List<File> uploadFiles = new ArrayList<>();
-    private UploadFileListener listener;
+public class UploadFileRequest extends BaseRequest<UploadFileRequest, UploadFileRequest.Builder, UploadFileListener> {
+    private List<File> uploadFiles;
 
-    public UploadFileRequest file(File file) {
-        if (file != null && file.exists()) {
-            this.uploadFiles.add(file);
-        }
-        return this;
+    public UploadFileRequest(UploadFileRequest.Builder builder) {
+        super(builder);
+        this.uploadFiles = builder.uploadFiles;
     }
 
-    public UploadFileRequest listener(UploadFileListener listener) {
-        this.listener = listener;
-        return this;
-    }
-
-    public UploadFileRequest build() {
+    @Override
+    public void execute() {
         MultipartBody.Builder multiBuilder = new MultipartBody.Builder();
         for (File file : uploadFiles) {
-//                    multiBuilder.addFormDataPart("file", file.getName(), MultipartBody.create(MediaType.parse("multipart/form-data"), file));
+            //                    multiBuilder.addFormDataPart("file", file.getName(), MultipartBody.create(MediaType.parse("multipart/form-data"), file));
             RequestBody requestBody = createCustomRequestBody(MultipartBody.FORM, file, this.listener);
             multiBuilder.addFormDataPart("file", file.getName(), requestBody);
         }
         RequestBody multiBody = multiBuilder.build();
 
-        Request.Builder requestBuilder =  new Request.Builder();
-        request= requestBuilder
+        Request.Builder requestBuilder = new Request.Builder();
+        request = requestBuilder
                 .url(url)
                 .post(multiBody)
                 .build();
-        return this;
+
+        Call call = OkHttpUtil.getInstance().getClient().newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                if (listener != null) {
+                    listener.onFailure(e);
+                }
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String resp = response.body().string();
+                Log.v("TAG", "resp:" + resp);
+                if (listener != null) {
+                    listener.onSuccess(resp);
+                }
+            }
+        });
     }
 
     public RequestBody createCustomRequestBody(final MediaType contentType, final File file, final UploadFileListener listener) {
         final int SEGMENT_SIZE = 2048;
         return new RequestBody() {
-            @Override public MediaType contentType() {
+            @Override
+            public MediaType contentType() {
                 Log.v("hello", "contentType:" + contentType);
                 return contentType;
             }
 
-            @Override public long contentLength() {
+            @Override
+            public long contentLength() {
                 Log.v("hello", "file length:" + file.length());
                 return file.length();
             }
 
-            @Override public void writeTo(BufferedSink sink) throws IOException {
+            @Override
+            public void writeTo(BufferedSink sink) throws IOException {
                 Log.v("hello", "writeTo");
                 Source source;
                 try {
@@ -90,25 +105,20 @@ public class UploadFileRequest extends BaseRequest<UploadFileRequest> {
         };
     }
 
-    public void execute() {
-        Call call = OkHttpUtil.getInstance().getClient().newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                if (listener != null) {
-                    listener.onFailure(e);
-                }
-                Log.v("TAG", "resp:" + e.getMessage());
-            }
+    public static class Builder extends BaseBuilder<Builder, UploadFileListener> {
+        private List<File> uploadFiles = new ArrayList<>();
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String resp = response.body().string();
-                Log.v("TAG", "resp:" + resp);
-                if (listener != null) {
-                    listener.onSuccess(resp);
-                }
-            }
-        });
+        public Builder file(File file) {
+            this.uploadFiles.add(file);
+            return this;
+        }
+
+        public Builder() {
+        }
+
+        public UploadFileRequest build() {
+            if (url == null) throw new IllegalStateException("url == null");
+            return new UploadFileRequest(this);
+        }
     }
 }

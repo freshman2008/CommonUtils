@@ -1,19 +1,20 @@
 package com.example.commonutils;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import com.alibaba.fastjson.JSONObject;
 import com.example.okhttputil.OkHttpUtil;
+import com.example.okhttputil.TestUtil;
 import com.example.okhttputil.listener.DownloadFileListener;
 import com.example.okhttputil.listener.RequestListener;
-import com.example.okhttputil.TestUtil;
-import com.example.okhttputil.listener.UploadFileListener;
 
 import java.io.File;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -36,8 +37,7 @@ public class MainActivity extends AppCompatActivity {
         OkHttpUtil
                 .get()
                 .url(url)
-                .build()
-                .execute(new RequestListener() {
+                .listener(new RequestListener() {
                     @Override
                     public void onFailure(Exception e) {
                         Log.v("TAG", "resp:" + e.getMessage());
@@ -47,7 +47,9 @@ public class MainActivity extends AppCompatActivity {
                     public void onResponse(String response) {
                         Log.v("TAG", "response:" + response);
                     }
-                });
+                })
+                .build()
+                .execute();
     }
 
     public void download(View view) {
@@ -62,8 +64,7 @@ public class MainActivity extends AppCompatActivity {
                 .download()
                 .url(url)
                 .file(file)
-                .build()
-                .execute(new DownloadFileListener() {
+                .listener(new DownloadFileListener() {
                     @Override
                     public void onSuccess(File file) {
                         Log.v("hello", "file downloaded : " + file.getAbsolutePath());
@@ -71,15 +72,16 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onProgress(int progress) {
-                        Log.v("hello", "download progress: "+ progress);
+                        Log.v("hello", "download progress: " + progress);
                     }
 
                     @Override
                     public void onFailure(Exception e) {
                         Log.v("hello", "file download failed.");
                     }
-                });
-
+                })
+                .build()
+                .execute();
 //        downloadFile();
     }
 
@@ -97,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onDownloading(int progress) {
 //                        progressDialog.setProgress(progress);
-                        Log.v("hello", "download progress: "+ progress);
+                        Log.v("hello", "download progress: " + progress);
                     }
 
                     @Override
@@ -111,5 +113,59 @@ public class MainActivity extends AppCompatActivity {
     public void upload(View view) {
         Intent intent = new Intent(MainActivity.this, UploadFileActivity.class);
         startActivity(intent);
+    }
+
+    public void postJson(View view) {
+        String url = "http://192.168.8.135:8888/postjson";
+
+        String data = "";
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("name", "zhangsan");
+        jsonData.put("age", "20");
+
+        OkHttpUtil
+                .post()
+                .content(jsonData.toJSONString())
+                .url(url)
+                .listener(new RequestListener() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.v("TAG", "resp:" + e.getMessage());
+                    }
+
+                    @Override
+                    public void onResponse(String response) {
+                        Log.v("TAG", "response:" + response);
+                    }
+                })
+                .build()
+                .execute();
+    }
+
+    public void postForm(View view) {
+        String url = "http://192.168.8.135:8888/postform";
+
+        HashMap<String, String> paramsMap = new HashMap<>();
+        paramsMap.put("name", "哈哈");
+        paramsMap.put("client", "Android");
+        paramsMap.put("id", "3243598");
+
+        OkHttpUtil
+                .post()
+//                .content(paramsMap)
+                .url(url)
+                .listener(new RequestListener() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.v("TAG", "resp:" + e.getMessage());
+                    }
+
+                    @Override
+                    public void onResponse(String response) {
+                        Log.v("TAG", "response:" + response);
+                    }
+                })
+                .build()
+                .execute();
     }
 }
