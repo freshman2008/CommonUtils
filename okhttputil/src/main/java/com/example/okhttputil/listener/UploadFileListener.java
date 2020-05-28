@@ -11,7 +11,7 @@ public interface UploadFileListener {
     /**
      * 上传进度
      */
-    void onProgress(long totalBytes, long remainingBytes, boolean done);
+    void onProgress(String filename, long totalBytes, long remainingBytes, boolean done);
 
     /**
      * 上传异常信息

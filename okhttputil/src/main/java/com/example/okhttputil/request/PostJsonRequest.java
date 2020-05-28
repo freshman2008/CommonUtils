@@ -2,8 +2,6 @@ package com.example.okhttputil.request;
 
 import android.util.Log;
 
-import com.example.okhttputil.OkHttpUtil;
-import com.example.okhttputil.builder.BaseBuilder;
 import com.example.okhttputil.listener.RequestListener;
 
 import java.io.IOException;
@@ -15,7 +13,60 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class PostJsonRequest extends BaseRequest<PostJsonRequest, PostJsonRequest.Builder, RequestListener> {
+public class PostJsonRequest extends BaseRequest<PostJsonRequest> {
+    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    private String content;
+
+    public PostJsonRequest() {
+    }
+
+    @Override
+    protected RequestBody createRequestBody() {
+        RequestBody formBody = RequestBody.create(JSON, content);
+        return formBody;
+    }
+
+    @Override
+    public Request newRequest() {
+        RequestBody formBody = RequestBody.create(JSON, content);
+        return getRequestBuilder()
+                .post(createRequestBody())
+                .url(url)
+                .build();
+    }
+
+    public PostJsonRequest url(String url) {
+        this.url = url;
+        return this;
+    }
+
+    public PostJsonRequest content(String content) {
+        this.content = content;
+        return this;
+    }
+
+    public void execute(final RequestListener listener) {
+        execute(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                if (listener != null) {
+                    listener.onFailure(e);
+                }
+                Log.v("TAG", "resp:" + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String resp = response.body().string();
+                Log.v("TAG", "resp:" + resp);
+                if (listener != null) {
+                    listener.onResponse(response);
+                }
+            }
+        });
+    }
+}
+/*public class PostJsonRequest extends BaseRequest<PostJsonRequest, PostJsonRequest.Builder, RequestListener> {
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private String content;
 
@@ -69,3 +120,4 @@ public class PostJsonRequest extends BaseRequest<PostJsonRequest, PostJsonReques
         }
     }
 }
+*/

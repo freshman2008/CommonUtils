@@ -80,7 +80,7 @@ public class UploadFileActivity extends AppCompatActivity {
     }
 
     public void upload(View view) {
-        String url = "http://192.168.8.135:8888/upload";
+        String url = "http://192.168.8.75:8888/upload";
         File file = new File(filePath1);
         File file1 = new File(filePath2);
         File file2 = new File(filePath3);
@@ -89,7 +89,7 @@ public class UploadFileActivity extends AppCompatActivity {
         fileList.add(file1);
         fileList.add(file2);
         for (File f : fileList) {
-            OkHttpUtil
+            /*OkHttpUtil
                     .upload()
                     .url(url)
                     .file(f)
@@ -118,28 +118,28 @@ public class UploadFileActivity extends AppCompatActivity {
                         }
                     })
                     .build()
-                    .execute();
+                    .execute();*/
         }
 
 //        TestUtil.getInstance().uploadFile(url, file, file1, file2);
 
-        /*try {
+        try {
             OkHttpUtil
                     .upload()
                     .url(url)
                     .file(file)
                     .file(file1)
                     .file(file2)
-                    .listener(new UploadFileListener() {
+                    .execute(new UploadFileListener() {
                         @Override
                         public void onSuccess(String response) {
                             Log.v("hello", "upload onSuccess: " + response);
                         }
 
                         @Override
-                        public void onProgress(long totalBytes, long remainingBytes, boolean done) {
+                        public void onProgress(String filename, long totalBytes, long remainingBytes, boolean done) {
                             long progress = (totalBytes - remainingBytes) * 100 / totalBytes;
-                            Log.v("hello", "upload progress: " + progress + "%");
+                            Log.v("hello", filename + "-> upload progress: " + progress + "%");
                             progressBar1.setProgress((int)progress);
                         }
 
@@ -147,11 +147,9 @@ public class UploadFileActivity extends AppCompatActivity {
                         public void onFailure(Exception e) {
                             Log.v("hello", "upload onFailure: " + e.getMessage());
                         }
-                    })
-                    .build()
-                    .execute();
+                    });
         } catch (Exception e) {
             e.printStackTrace();
-        }*/
+        }
     }
 }

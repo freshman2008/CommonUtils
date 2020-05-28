@@ -2,6 +2,7 @@ package com.example.okhttputil;
 
 import com.example.okhttputil.request.DownloadFileRequest;
 import com.example.okhttputil.request.GetRequest;
+import com.example.okhttputil.request.PostFormRequest;
 import com.example.okhttputil.request.PostJsonRequest;
 import com.example.okhttputil.request.UploadFileRequest;
 
@@ -26,23 +27,35 @@ public class OkHttpUtil {
     }
 
     public OkHttpClient getClient() {
-        return client;
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        return builder
+                .sslSocketFactory(SSLParams.getSSLSocketFactory())
+                .hostnameVerifier(SSLParams.getHostnameVerifier())
+                .build();
+//        return client;
     }
 
-
-    public static GetRequest.Builder get() {
-        return new GetRequest.Builder();
+    public void setClient(OkHttpClient client) {
+        this.client = client;
     }
 
-    public static DownloadFileRequest.Builder download() {
-        return new DownloadFileRequest.Builder();
+    public static GetRequest get() {
+        return new GetRequest();
     }
 
-    public static UploadFileRequest.Builder upload() {
-        return new UploadFileRequest.Builder();
+    public static DownloadFileRequest download() {
+        return new DownloadFileRequest();
     }
 
-    public static PostJsonRequest.Builder post() {
-        return new PostJsonRequest.Builder();
+    public static UploadFileRequest upload() {
+        return new UploadFileRequest();
+    }
+
+    public static PostJsonRequest postJson() {
+        return new PostJsonRequest();
+    }
+
+    public static PostFormRequest postForm() {
+        return new PostFormRequest();
     }
 }

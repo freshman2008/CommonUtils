@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -26,7 +27,14 @@ public class ExampleUnitTest {
 
     @Test
     public void et() {
+//        ThreadPoolExecutor threadPool = new ThreadPoolExecutor(3, 4,
+//                3, TimeUnit.SECONDS,
+//                new ArrayBlockingQueue<Runnable>(2),
+//                new ThreadPoolExecutor.CallerRunsPolicy());
+
         final LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
+//        final ArrayBlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(10);
+//        final SynchronousQueue<Runnable> queue = new SynchronousQueue<>();
         final ThreadPoolExecutor mThreadPool = new ThreadPoolExecutor(2, 4, 60, TimeUnit.SECONDS, queue, new ThreadFactory() {
             private AtomicInteger id = new AtomicInteger(1);
             @Override
@@ -35,8 +43,9 @@ public class ExampleUnitTest {
                 return thread;
             }
         });
+        mThreadPool.prestartCoreThread();
 
-        for (int i = 0; i < 114; i++) {
+        for (int i = 0; i < 24; i++) {
             final int index = i;
             mThreadPool.execute(new Runnable() {
                 @Override

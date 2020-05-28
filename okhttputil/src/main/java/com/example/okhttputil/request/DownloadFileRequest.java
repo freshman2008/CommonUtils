@@ -1,9 +1,10 @@
 package com.example.okhttputil.request;
 
-import com.example.okhttputil.OkHttpUtil;
-import com.example.okhttputil.builder.BaseBuilder;
+import android.util.Log;
+
 import com.example.okhttputil.listener.DownloadFileListener;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -14,6 +15,91 @@ import okhttp3.Callback;
 import okhttp3.Request;
 import okhttp3.Response;
 
+public class DownloadFileRequest extends BaseRequest<DownloadFileRequest> {
+    protected File file;
+
+    @Override
+    public Request newRequest() {
+        return getRequestBuilder()
+                .get()
+                .url(url)
+                .build();
+    }
+
+    public DownloadFileRequest url(String url) {
+        this.url = url;
+        return this;
+    }
+
+    public DownloadFileRequest file(File file) {
+        this.file = file;
+        return this;
+    }
+
+    public void execute(final DownloadFileListener listener) {
+        execute(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                if (listener != null) {
+                    listener.onFailure(e);
+                }
+                Log.v("TAG", "resp:" + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+//                String resp = response.body().string();
+//                Log.v("TAG", "resp:" + resp);
+                if (listener != null) {
+//                    listener.onResponse(resp);
+                    saveFile(file, response.body().contentLength(), response.body().byteStream(), listener);
+                }
+            }
+        });
+    }
+
+    private void saveFile(File file, long contentLength, InputStream is, DownloadFileListener listener) {
+        byte[] buf = new byte[2048];
+        int len = 0;
+        FileOutputStream fos = null;
+        BufferedInputStream bin = new BufferedInputStream(is);
+
+//        //储存下载文件的目录
+//        if(this.file == null) {
+//            String destPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+//            File file = new File(destPath, fileName);
+//        }
+
+        try {
+            fos = new FileOutputStream(file);
+            long sum = 0;
+            while ((len = bin.read(buf)) != -1) {
+                fos.write(buf, 0, len);
+                sum += len;
+
+                int progress = (int) (sum * 1.0f / contentLength * 100);
+                //下载中更新进度条
+                listener.onProgress(progress);
+            }
+            fos.flush();
+            //下载完成
+            listener.onSuccess(file);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (is != null) {
+                    is.close();
+                }
+                if (fos != null) {
+                    fos.close();
+                }
+            } catch (IOException e) {
+            }
+        }
+    }
+}
+/*
 public class DownloadFileRequest extends BaseRequest<DownloadFileRequest, DownloadFileRequest.Builder, DownloadFileListener> {
     private File file;
 
@@ -117,4 +203,4 @@ public class DownloadFileRequest extends BaseRequest<DownloadFileRequest, Downlo
             return new DownloadFileRequest(this);
         }
     }
-}
+}*/
