@@ -9,13 +9,14 @@ import android.view.View;
 
 import com.alibaba.fastjson.JSONObject;
 import com.example.okhttputil.OkHttpUtil;
-import com.example.okhttputil.SSLParams;
+import com.example.okhttputil.SSLHelper;
 import com.example.okhttputil.listener.DownloadFileListener;
 import com.example.okhttputil.listener.RequestListener;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
@@ -28,8 +29,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        builder.sslSocketFactory(SSLParams.getSSLSocketFactory(getApplicationContext())/*new SSLParams.UnSafeTrustManager()*/);
-        builder.hostnameVerifier(SSLParams.getHostnameVerifier());
+        builder.connectTimeout(60000, TimeUnit.SECONDS)
+                .readTimeout(60000, TimeUnit.SECONDS)
+                .writeTimeout(60000, TimeUnit.SECONDS)
+                .sslSocketFactory(SSLHelper.getSSLSocketFactory(getApplicationContext())/*new SSLHelper.UnSafeTrustManager()*/)
+                .hostnameVerifier(SSLHelper.getHostnameVerifier());
         OkHttpUtil.getInstance().setClient(builder.build());
     }
 
