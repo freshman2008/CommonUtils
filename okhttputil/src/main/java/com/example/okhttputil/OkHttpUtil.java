@@ -9,10 +9,11 @@ import com.example.okhttputil.request.UploadFileRequest;
 import okhttp3.OkHttpClient;
 
 public class OkHttpUtil {
-    OkHttpClient client = new OkHttpClient();
+    private static OkHttpClient client;
     private static volatile OkHttpUtil instance;
 
     private OkHttpUtil() {
+        client = new OkHttpClient();
     }
 
     public static OkHttpUtil getInstance() {
@@ -27,16 +28,11 @@ public class OkHttpUtil {
     }
 
     public OkHttpClient getClient() {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        return builder
-                .sslSocketFactory(SSLParams.getSSLSocketFactory())
-                .hostnameVerifier(SSLParams.getHostnameVerifier())
-                .build();
-//        return client;
+        return client;
     }
 
-    public void setClient(OkHttpClient client) {
-        this.client = client;
+    public void setClient(OkHttpClient client1) {
+        client = client1;
     }
 
     public static GetRequest get() {

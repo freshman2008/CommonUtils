@@ -6,9 +6,11 @@ import com.example.okhttputil.listener.DownloadFileListener;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -17,11 +19,15 @@ import okhttp3.Response;
 
 public class DownloadFileRequest extends BaseRequest<DownloadFileRequest> {
     protected File file;
-
+    private long start=0;
     @Override
     public Request newRequest() {
+        if (file!=null && file.exists()) {
+            start = file.length();
+        }
         return getRequestBuilder()
                 .get()
+                .addHeader("Range", "bytes=" + start + "-")
                 .url(url)
                 .build();
     }
@@ -59,44 +65,45 @@ public class DownloadFileRequest extends BaseRequest<DownloadFileRequest> {
     }
 
     private void saveFile(File file, long contentLength, InputStream is, DownloadFileListener listener) {
-        byte[] buf = new byte[2048];
-        int len = 0;
-        FileOutputStream fos = null;
-        BufferedInputStream bin = new BufferedInputStream(is);
-
-//        //储存下载文件的目录
-//        if(this.file == null) {
-//            String destPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-//            File file = new File(destPath, fileName);
-//        }
-
+        RandomAccessFile randomAccessFile = null;
         try {
-            fos = new FileOutputStream(file);
-            long sum = 0;
-            while ((len = bin.read(buf)) != -1) {
-                fos.write(buf, 0, len);
-                sum += len;
+            randomAccessFile = new RandomAccessFile(file, "rwd");
+            randomAccessFile.seek(start);
 
+            int len;
+            long sum = start;
+            byte[] buf  = new byte[1024/*1024*500*/];
+            while ((len = is.read(buf)) != -1) {
+                randomAccessFile.write(buf, 0, len);
+                sum += len;
                 int progress = (int) (sum * 1.0f / contentLength * 100);
                 //下载中更新进度条
                 listener.onProgress(progress);
             }
-            fos.flush();
-            //下载完成
             listener.onSuccess(file);
-        } catch (Exception e) {
+            randomAccessFile.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         } finally {
             try {
                 if (is != null) {
                     is.close();
                 }
-                if (fos != null) {
-                    fos.close();
+                if (randomAccessFile != null) {
+                    randomAccessFile.close();
                 }
             } catch (IOException e) {
+                e.printStackTrace();
             }
         }
+
+//        //储存下载文件的目录
+//        if(this.file == null) {
+//            String destPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+//            File file = new File(destPath, fileName);
+//        }
     }
 }
 /*

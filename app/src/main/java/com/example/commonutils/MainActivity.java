@@ -9,6 +9,7 @@ import android.view.View;
 
 import com.alibaba.fastjson.JSONObject;
 import com.example.okhttputil.OkHttpUtil;
+import com.example.okhttputil.SSLParams;
 import com.example.okhttputil.listener.DownloadFileListener;
 import com.example.okhttputil.listener.RequestListener;
 
@@ -16,6 +17,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import okhttp3.OkHttpClient;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
@@ -24,11 +26,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        builder.sslSocketFactory(SSLParams.getSSLSocketFactory(getApplicationContext())/*new SSLParams.UnSafeTrustManager()*/);
+        builder.hostnameVerifier(SSLParams.getHostnameVerifier());
+        OkHttpUtil.getInstance().setClient(builder.build());
     }
 
     public void get(View view) {
 //        String url = "https://api.apiopen.top/getJoke?page=1&count=2&type=video";
-        String url = "https://www.baidu.com";
+//        String url = "https://www.baidu.com";
+        String url = "https://192.168.8.135:20011/";
 //        try {
 ////            String resp = OkHttpUtil.getInstance().get(url);
 ////            Log.v("TAG", "resp:" + resp);
@@ -70,10 +78,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void download(View view) {
         Log.v("hello", "download");
-        String url = "https://www.runoob.com/try/demo_source/movie.mp4";
+//        String url = "https://www.runoob.com/try/demo_source/movie.mp4";
+        String url = "http://192.168.8.75:8888/wechat_devtools_1.02.2003250_x64.exe";
 
         String destPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-        String filename = "hello.mp4";
+        String filename = "hello.exe";
         File file = new File(destPath, filename);
 
         OkHttpUtil
