@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.CertificatePinner;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 
@@ -29,10 +30,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        builder.connectTimeout(60000, TimeUnit.SECONDS)
+        builder.connectTimeout(10000, TimeUnit.SECONDS)
                 .readTimeout(60000, TimeUnit.SECONDS)
                 .writeTimeout(60000, TimeUnit.SECONDS)
-                .sslSocketFactory(SSLHelper.getSSLSocketFactory(getApplicationContext())/*new SSLHelper.UnSafeTrustManager()*/)
+//                .certificatePinner(new CertificatePinner.Builder()
+//                        .add("192.168.8.135", "sha256/pmQ4y/l/5o5rIubwew81LnF5h86uowOmtYgDUfCs4f4=") //server证书
+//                        .add("192.168.8.135", "sha256/p7sJkcvx2iklSqOp2J0mnXdEJpZf/xMrFXP6C+QBu8I=") //签发server证书的CA
+//                        .build())
+                .sslSocketFactory(SSLHelper.getSSLSocketFactory(getApplicationContext())/*, new SSLHelper.UnSafeTrustManager()*/)
                 .hostnameVerifier(SSLHelper.getHostnameVerifier());
         OkHttpUtil.getInstance().setClient(builder.build());
     }

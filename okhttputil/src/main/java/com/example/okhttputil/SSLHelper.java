@@ -34,7 +34,10 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import javax.security.auth.x500.X500Principal;
 
+import okhttp3.CertificatePinner;
 import okhttp3.OkHttpClient;
+import okhttp3.internal.Util;
+import okio.ByteString;
 
 public class SSLHelper {
     private static final String TAG = "SSLHelper";
@@ -117,6 +120,7 @@ public class SSLHelper {
 
             //初始化SSL上下文
             SSLContext sslContext = SSLContext.getInstance("SSL");
+//            TrustManager[] tm = {new UnSafeTrustManager()};
             sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), new SecureRandom());
             return sslContext.getSocketFactory();
         } catch (Exception e) {
@@ -178,6 +182,11 @@ public class SSLHelper {
 
         @Override
         public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+//            String pin1 = Util.sha256(ByteString.of(chain[0].getPublicKey().getEncoded())).base64();
+//            String pin2 = Util.sha256(ByteString.of(chain[1].getPublicKey().getEncoded())).base64();
+//            String pin1 = CertificatePinner.pin(chain[0]);
+//            String pin2 = CertificatePinner.pin(chain[1]);
+
             Log.v("hello", "");
         }
 
